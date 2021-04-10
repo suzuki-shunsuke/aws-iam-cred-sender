@@ -16,17 +16,24 @@ type Secret struct {
 	SlackBotToken string `yaml:"slack_bot_token"`
 }
 
+// https://api.slack.com/methods/users.list
+// > We recommend no more than 200 results at a time.
+const usersOpitonLimit = 190
+
 func (ctrl *Controller) GetSlackUser(ctx context.Context, name string) (slack.User, error) {
-	users, err := ctrl.SlackBot.GetUsersContext(ctx)
-	if err != nil {
-		return slack.User{}, fmt.Errorf("get all Slack Users: %w", err)
-	}
-	for _, user := range users {
-		if user.Name == name {
-			return user, nil
+	userPagination := ctrl.SlackBot.GetUsersPaginated(slack.GetUsersOptionLimit(usersOpitonLimit))
+	for {
+		for _, user := range userPagination.Users {
+			// https://api.slack.com/types/user
+			if user.Profile.DisplayName == name {
+				return user, nil
+			}
+		}
+		userPagination, err := userPagination.Next(ctx)
+		if userPagination.Done(err) {
+			return slack.User{}, errors.New("user isn't found: " + name)
 		}
 	}
-	return slack.User{}, errors.New("user isn't found: " + name)
 }
 
 func (ctrl *Controller) Run(ctx context.Context, param Param) error {
