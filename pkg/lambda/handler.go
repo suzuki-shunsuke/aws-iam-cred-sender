@@ -2,6 +2,7 @@ package lambda
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -77,6 +78,9 @@ func (handler *Handler) Init(ctx context.Context) error {
 }
 
 func (handler *Handler) Start(ctx context.Context, ev events.CloudWatchEvent) error {
+	if err := json.NewEncoder(os.Stderr).Encode(&ev); err != nil {
+		return fmt.Errorf("parse a CloudWatchEvent as JSON: %w", err)
+	}
 	if err := handler.start(ctx, ev); err != nil {
 		logrus.WithError(err).Error("start")
 		return err
