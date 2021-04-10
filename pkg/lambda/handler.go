@@ -71,7 +71,6 @@ func (handler *Handler) Init(ctx context.Context) error {
 
 	// create a slack client
 	ctrl.SlackBot = slack.New(secret.SlackBotToken)
-	ctrl.SlackUser = slack.New(secret.SlackUserToken)
 	handler.ctrl = &ctrl
 
 	return nil

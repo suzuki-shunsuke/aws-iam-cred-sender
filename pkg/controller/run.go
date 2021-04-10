@@ -13,12 +13,11 @@ import (
 )
 
 type Secret struct {
-	SlackBotToken  string `yaml:"slack_bot_token"`
-	SlackUserToken string `yaml:"slack_user_token"`
+	SlackBotToken string `yaml:"slack_bot_token"`
 }
 
 func (ctrl *Controller) GetSlackUser(ctx context.Context, name string) (slack.User, error) {
-	users, err := ctrl.SlackUser.GetUsersContext(ctx)
+	users, err := ctrl.SlackBot.GetUsersContext(ctx)
 	if err != nil {
 		return slack.User{}, fmt.Errorf("get all Slack Users: %w", err)
 	}

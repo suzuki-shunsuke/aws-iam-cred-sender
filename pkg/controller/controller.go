@@ -11,12 +11,11 @@ import (
 )
 
 type Controller struct {
-	Stdin     io.Reader
-	Stdout    io.Writer
-	Stderr    io.Writer
-	Config    Config
-	SlackBot  *slack.Client
-	SlackUser *slack.Client
+	Stdin    io.Reader
+	Stdout   io.Writer
+	Stderr   io.Writer
+	Config   Config
+	SlackBot *slack.Client
 }
 
 func New(ctx context.Context, param Param) (Controller, Param, error) {

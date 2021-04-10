@@ -19,7 +19,6 @@ type Param struct {
 	ConfigFilePath        string
 	LogLevel              string
 	SlackBotAccessToken   string
-	SlackUserAccessToken  string
 	MessageTemplateString string
 	InitalPasswordLength  int
 	// user filter
