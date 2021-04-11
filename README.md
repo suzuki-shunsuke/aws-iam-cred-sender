@@ -63,6 +63,17 @@ secret_id: xxx
 region: xxx
 ```
 
+#### Template
+
+The template is rendered with Go's [text/template](https://golang.org/pkg/text/template/).
+And [sprig Function](http://masterminds.github.io/sprig/) can be used.
+
+Template variables:
+
+* AWSAccountID
+* UserName
+* Password
+
 ### AWS Secrets Manager's Secret
 
 * slack_bot_token
