@@ -13,27 +13,5 @@ builds:
   - linux
   goarch:
   - amd64
-- binary: aws-iam-cred-sender-lambda-org
-  id: aws-iam-cred-sender-lambda-org
-  main: cmd/aws-iam-cred-sender-lambda-org/main.go
-  env:
-  - CGO_ENABLED=0
-  goos:
-  - windows
-  - darwin
-  - linux
-  goarch:
-  - amd64
-- binary: aws-iam-cred-sender-lambda-repo
-  id: aws-iam-cred-sender-lambda-repo
-  main: cmd/aws-iam-cred-sender-lambda-repo/main.go
-  env:
-  - CGO_ENABLED=0
-  goos:
-  - windows
-  - darwin
-  - linux
-  goarch:
-  - amd64
 release:
   prerelease: true
