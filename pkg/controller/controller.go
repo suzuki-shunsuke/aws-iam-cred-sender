@@ -5,17 +5,20 @@ import (
 	"errors"
 	"io"
 	"os"
+	"text/template"
 
 	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 )
 
 type Controller struct {
-	Stdin    io.Reader
-	Stdout   io.Writer
-	Stderr   io.Writer
-	Config   Config
-	SlackBot *slack.Client
+	Stdin                        io.Reader
+	Stdout                       io.Writer
+	Stderr                       io.Writer
+	Config                       Config
+	SlackBot                     *slack.Client
+	MessageTemplate              *template.Template
+	MessageTemplateForSystemUser *template.Template
 }
 
 func New(ctx context.Context, param Param) (Controller, Param, error) {

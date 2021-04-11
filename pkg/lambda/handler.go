@@ -22,8 +22,21 @@ type Handler struct {
 }
 
 const (
-	systemUserCreatedMsg = "AWS Account for system user has been created: "
-	userCreatedMsg       = "Your AWS Account has been created. Initial password: "
+	systemUserCreatedMsg = "AWS Account for system user has been created: `{{.UserName}}`"
+	userCreatedMsg       = `Your AWS Account has been created.
+Initial password:
+
+` + "```" + `
+{{.Password}}
+` + "```" + `
+
+Please sign in AWS and change your password.
+
+https://signin.aws.amazon.com/console
+
+Please create your AWS Access Key if needed.
+https://console.aws.amazon.com/iam/home#/users/{{.UserName}}?section=security_credentials
+`
 )
 
 func (handler *Handler) Init(ctx context.Context) error {
@@ -69,6 +82,13 @@ func (handler *Handler) Init(ctx context.Context) error {
 		return fmt.Errorf("initialize a controller: %w", err)
 	}
 	ctrl.Config = cfg
+
+	if ctrl.MessageTemplate, err = ctrl.CompileTemplate(cfg.Message); err != nil {
+		return err
+	}
+	if ctrl.MessageTemplateForSystemUser, err = ctrl.CompileTemplate(cfg.MessageForSystemUser); err != nil {
+		return err
+	}
 
 	// create a slack client
 	ctrl.SlackBot = slack.New(secret.SlackBotToken)
