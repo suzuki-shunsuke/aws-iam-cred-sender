@@ -26,10 +26,15 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error {
 	logE.Info("start getting a Slack User")
 	user, err := ctrl.GetSlackUser(ctx, param.UserName)
 	if err != nil {
+		if ctrl.Config.Slack.ChannelIDForSystemUser == "" {
+			logrus.Debug("channel_id_for_system_user isn't set")
+			return nil
+		}
 		// treat the user as a system account
 		// send a notification to slack
 		msg, err := ctrl.RenderTemplate(ctrl.MessageTemplateForSystemUser, map[string]interface{}{
-			"UserName": param.UserName,
+			"UserName":     param.UserName,
+			"AWSAccountID": ctrl.Config.AWSAccountID,
 		})
 		if err != nil {
 			return err
@@ -68,8 +73,9 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error {
 	// }
 	// create a message
 	msg, err := ctrl.RenderTemplate(ctrl.MessageTemplate, map[string]interface{}{
-		"UserName": param.UserName,
-		"Password": passwd,
+		"UserName":     param.UserName,
+		"Password":     passwd,
+		"AWSAccountID": ctrl.Config.AWSAccountID,
 	})
 	if err != nil {
 		return fmt.Errorf("render a message: %w", err)

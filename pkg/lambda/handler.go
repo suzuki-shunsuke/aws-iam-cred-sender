@@ -3,6 +3,7 @@ package lambda
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -22,8 +23,10 @@ type Handler struct {
 }
 
 const (
-	systemUserCreatedMsg = "AWS Account for system user has been created: `{{.UserName}}`"
-	userCreatedMsg       = `Your AWS Account has been created.
+	systemUserCreatedMsg = "AWS IAM User for system has been created: `{{.UserName}}`"
+	userCreatedMsg       = `Your AWS IAM User has been created.
+AWS Account ID: ` + "`{{.AWSAccountID}}`" + `
+User Name: ` + "`{{.UserName}}`" + `
 Initial password:
 
 ` + "```" + `
@@ -32,11 +35,16 @@ Initial password:
 
 Please sign in AWS and change your password.
 
-https://signin.aws.amazon.com/console
+https://{{.AWSAccountID}}.signin.aws.amazon.com/console
 
-Please create your AWS Access Key if needed.
+And please create your AWS Access Key if needed.
 https://console.aws.amazon.com/iam/home#/users/{{.UserName}}?section=security_credentials
 `
+)
+
+var (
+	errAWSAccountIDIsRequired = errors.New("AWS Account ID is required")
+	errSecretIDIsRequired     = errors.New("secret ID is required")
 )
 
 func (handler *Handler) Init(ctx context.Context) error {
@@ -46,6 +54,13 @@ func (handler *Handler) Init(ctx context.Context) error {
 		if err := yaml.Unmarshal([]byte(cfgString), &cfg); err != nil {
 			return fmt.Errorf("unmarshal config: %w", err)
 		}
+	}
+
+	if cfg.AWSAccountID == "" {
+		return errAWSAccountIDIsRequired
+	}
+	if cfg.SecretID == "" {
+		return errSecretIDIsRequired
 	}
 
 	// set default config
@@ -65,8 +80,8 @@ func (handler *Handler) Init(ctx context.Context) error {
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(cfg.SecretID),
 	}
-	if cfg.VersionID != "" {
-		input.VersionId = aws.String(cfg.VersionID)
+	if cfg.SecretVersionID != "" {
+		input.VersionId = aws.String(cfg.SecretVersionID)
 	}
 	output, err := svc.GetSecretValueWithContext(ctx, input)
 	if err != nil {

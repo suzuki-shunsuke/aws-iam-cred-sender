@@ -3,7 +3,8 @@ package controller
 type Config struct {
 	LogLevel              string `yaml:"log_level"`
 	SecretID              string `yaml:"secret_id"`
-	VersionID             string `yaml:"version_id"`
+	SecretVersionID       string `yaml:"secret_version_id"`
+	AWSAccountID          string `yaml:"aws_account_id"`
 	Region                string
 	Message               string
 	MessageForSystemUser  string `yaml:"message_for_system_user"`
