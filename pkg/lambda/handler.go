@@ -47,23 +47,17 @@ var (
 	errSecretIDIsRequired     = errors.New("secret ID is required")
 )
 
-func (handler *Handler) Init(ctx context.Context) error {
-	cfgString := os.Getenv("CONFIG")
-	cfg := controller.Config{}
-	if cfgString != "" {
-		if err := yaml.Unmarshal([]byte(cfgString), &cfg); err != nil {
-			return fmt.Errorf("unmarshal config: %w", err)
-		}
-	}
-
+func (handler *Handler) validateConfig(cfg controller.Config) error {
 	if cfg.AWSAccountID == "" {
 		return errAWSAccountIDIsRequired
 	}
 	if cfg.SecretID == "" {
 		return errSecretIDIsRequired
 	}
+	return nil
+}
 
-	// set default config
+func (handler *Handler) setDefaultConfig(cfg *controller.Config) {
 	if cfg.InitialPasswordLength == 0 {
 		cfg.InitialPasswordLength = 32
 	}
@@ -73,6 +67,22 @@ func (handler *Handler) Init(ctx context.Context) error {
 	if cfg.MessageForSystemUser == "" {
 		cfg.MessageForSystemUser = systemUserCreatedMsg
 	}
+}
+
+func (handler *Handler) Init(ctx context.Context) error {
+	cfgString := os.Getenv("CONFIG")
+	cfg := controller.Config{}
+	if cfgString != "" {
+		if err := yaml.Unmarshal([]byte(cfgString), &cfg); err != nil {
+			return fmt.Errorf("unmarshal config: %w", err)
+		}
+	}
+
+	if err := handler.validateConfig(cfg); err != nil {
+		return err
+	}
+
+	handler.setDefaultConfig(&cfg)
 
 	sess := session.Must(session.NewSession())
 
@@ -99,10 +109,10 @@ func (handler *Handler) Init(ctx context.Context) error {
 	ctrl.Config = cfg
 
 	if ctrl.MessageTemplate, err = ctrl.CompileTemplate(cfg.Message); err != nil {
-		return err
+		return fmt.Errorf("parse the configuration message as template: %w", err)
 	}
 	if ctrl.MessageTemplateForSystemUser, err = ctrl.CompileTemplate(cfg.MessageForSystemUser); err != nil {
-		return err
+		return fmt.Errorf("parse the configuration message_for_system_user as template: %w", err)
 	}
 
 	// create a slack client
@@ -113,17 +123,17 @@ func (handler *Handler) Init(ctx context.Context) error {
 }
 
 func (handler *Handler) Start(ctx context.Context, ev events.CloudWatchEvent) error {
-	if err := json.NewEncoder(os.Stderr).Encode(&ev); err != nil {
-		return fmt.Errorf("parse a CloudWatchEvent as JSON: %w", err)
-	}
 	if err := handler.start(ctx, ev); err != nil {
-		logrus.WithError(err).Error("start")
+		logrus.WithError(err).Error("handle a CloudWatchEvent")
 		return err
 	}
 	return nil
 }
 
 func (handler *Handler) start(ctx context.Context, ev events.CloudWatchEvent) error {
+	if err := json.NewEncoder(os.Stderr).Encode(&ev); err != nil {
+		return fmt.Errorf("parse a CloudWatchEvent as JSON: %w", err)
+	}
 	parser := event.Parser{}
 	user, err := parser.Parse(ctx, ev)
 	if err != nil {
@@ -134,5 +144,5 @@ func (handler *Handler) start(ctx context.Context, ev events.CloudWatchEvent) er
 		UserName: user.Name,
 	}
 
-	return handler.ctrl.Run(ctx, param)
+	return handler.ctrl.Run(ctx, param) //nolint:wrapcheck
 }

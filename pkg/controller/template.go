@@ -9,7 +9,7 @@ import (
 )
 
 func (ctrl *Controller) CompileTemplate(text string) (*template.Template, error) {
-	return template.New("_").Funcs(template.FuncMap{}).Funcs(sprig.TxtFuncMap()).Parse(text)
+	return template.New("_").Funcs(template.FuncMap{}).Funcs(sprig.TxtFuncMap()).Parse(text) //nolint:wrapcheck
 }
 
 func (ctrl *Controller) RenderTemplate(tpl *template.Template, data interface{}) (string, error) {

@@ -26,26 +26,7 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error {
 	logE.Info("start getting a Slack User")
 	user, err := ctrl.GetSlackUser(ctx, param.UserName)
 	if err != nil {
-		if ctrl.Config.Slack.ChannelIDForSystemUser == "" {
-			logrus.Debug("channel_id_for_system_user isn't set")
-			return nil
-		}
-		// treat the user as a system account
-		// send a notification to slack
-		msg, err := ctrl.RenderTemplate(ctrl.MessageTemplateForSystemUser, map[string]interface{}{
-			"UserName":     param.UserName,
-			"AWSAccountID": ctrl.Config.AWSAccountID,
-		})
-		if err != nil {
-			return err
-		}
-		if _, _, _, err := ctrl.SlackBot.SendMessageContext(ctx, ctrl.Config.Slack.ChannelIDForSystemUser, slack.MsgOptionText(msg, false)); err != nil {
-			return fmt.Errorf("send a notification that a system user has been created to Slack channel (channel id: %s): %w", ctrl.Config.Slack.ChannelIDForSystemUser, err)
-		}
-		logE.WithFields(logrus.Fields{
-			"channel_id": ctrl.Config.Slack.ChannelIDForSystemUser,
-		}).Info("send a notification that a system user has been created to Slack channel")
-		return nil
+		return ctrl.handleSystemUser(ctx, param)
 	}
 	logE = logE.WithFields(logrus.Fields{
 		"slack_id": user.ID,
@@ -86,5 +67,31 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error {
 		return fmt.Errorf("send Slack DM to a created user(Slack User ID: %s): %w", user.ID, err)
 	}
 	logE.Info("send a message")
+	return nil
+}
+
+func (ctrl *Controller) handleSystemUser(ctx context.Context, param Param) error {
+	logE := logrus.WithFields(logrus.Fields{
+		"user_name": param.UserName,
+	})
+	if ctrl.Config.Slack.ChannelIDForSystemUser == "" {
+		logE.Debug("channel_id_for_system_user isn't set")
+		return nil
+	}
+	// treat the user as a system account
+	// send a notification to slack
+	msg, err := ctrl.RenderTemplate(ctrl.MessageTemplateForSystemUser, map[string]interface{}{
+		"UserName":     param.UserName,
+		"AWSAccountID": ctrl.Config.AWSAccountID,
+	})
+	if err != nil {
+		return err
+	}
+	if _, _, _, err := ctrl.SlackBot.SendMessageContext(ctx, ctrl.Config.Slack.ChannelIDForSystemUser, slack.MsgOptionText(msg, false)); err != nil {
+		return fmt.Errorf("send a notification that a system user has been created to Slack channel (channel id: %s): %w", ctrl.Config.Slack.ChannelIDForSystemUser, err)
+	}
+	logE.WithFields(logrus.Fields{
+		"channel_id": ctrl.Config.Slack.ChannelIDForSystemUser,
+	}).Info("send a notification that a system user has been created to Slack channel")
 	return nil
 }
