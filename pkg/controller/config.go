@@ -6,7 +6,7 @@ type Config struct {
 	VersionID             string `yaml:"version_id"`
 	Region                string
 	Message               string
-	MessageForSystemUser  string
+	MessageForSystemUser  string `yaml:"message_for_system_user"`
 	Slack                 SlackConfig
 	InitialPasswordLength int `yaml:"initial_password_length"`
 }
