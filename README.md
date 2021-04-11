@@ -49,7 +49,7 @@ message: |
 
   And please create your AWS Access Key if needed.
   https://console.aws.amazon.com/iam/home#/users/{{.UserName}}?section=security_credentials
-initial_password_length: 64
+initial_password_length: 32
 slack:
   channel_id_for_system_user: ""
 secret_version_id: ""
