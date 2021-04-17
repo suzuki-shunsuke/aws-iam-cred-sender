@@ -67,6 +67,9 @@ func (handler *Handler) setDefaultConfig(cfg *controller.Config) {
 	if cfg.MessageForSystemUser == "" {
 		cfg.MessageForSystemUser = systemUserCreatedMsg
 	}
+	if cfg.WhenLoginProfileExist == "" {
+		cfg.WhenLoginProfileExist = "change_password"
+	}
 }
 
 func (handler *Handler) Init(ctx context.Context) error {

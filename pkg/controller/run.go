@@ -2,9 +2,11 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/sethvargo/go-password/password"
@@ -16,7 +18,7 @@ type Secret struct {
 	SlackBotToken string `yaml:"slack_bot_token"`
 }
 
-func (ctrl *Controller) Run(ctx context.Context, param Param) error {
+func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:funlen,cyclop
 	sess := session.Must(session.NewSession())
 	logE := logrus.WithFields(logrus.Fields{
 		"user_name": param.UserName,
@@ -40,14 +42,36 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error {
 	logE.Info("generate an initial password")
 	// create a login profile
 	iamSvc := iam.New(sess, aws.NewConfig().WithRegion(ctrl.Config.Region))
-	if _, err := iamSvc.CreateLoginProfileWithContext(ctx, &iam.CreateLoginProfileInput{
+	if _, err := iamSvc.CreateLoginProfileWithContext(ctx, &iam.CreateLoginProfileInput{ //nolint:nestif
 		Password:              aws.String(passwd),
 		PasswordResetRequired: aws.Bool(true),
 		UserName:              aws.String(param.UserName),
 	}); err != nil {
-		return fmt.Errorf("create a login profile: %w", err)
+		if ctrl.Config.WhenLoginProfileExist == "error" {
+			return fmt.Errorf("create a login profile: %w", err)
+		}
+		var aerr awserr.Error
+		if errors.As(err, &aerr) {
+			if aerr.Code() != iam.ErrCodeEntityAlreadyExistsException {
+				return fmt.Errorf("create a login profile: %w", err)
+			}
+			if ctrl.Config.WhenLoginProfileExist == "ignore" {
+				return nil
+			}
+			if _, err := iamSvc.UpdateLoginProfileWithContext(ctx, &iam.UpdateLoginProfileInput{
+				Password:              aws.String(passwd),
+				PasswordResetRequired: aws.Bool(true),
+				UserName:              aws.String(param.UserName),
+			}); err != nil {
+				return fmt.Errorf("update a login profile: %w", err)
+			}
+			logE.Info("update a login profile")
+		} else {
+			return fmt.Errorf("create a login profile: %w", err)
+		}
+	} else {
+		logE.Info("create a login profile")
 	}
-	logE.Info("create a login profile")
 	// create an access key
 	// if _, err := iamSvc.CreateAccessKeyWithContext(ctx, &iam.CreateAccessKeyInput{}); err != nil {
 	// 	return err
