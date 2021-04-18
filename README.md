@@ -23,6 +23,8 @@ If the IAM User is found, the function creates the IAM User's login profile and 
 
 ![image](https://user-images.githubusercontent.com/13323303/114290993-bbca6780-9abe-11eb-9efe-ff2376400a96.png)
 
+If the login profile already exists, the password is changed by default. This behavior can be changed.
+
 ## Architecture
 
 ```
@@ -58,6 +60,8 @@ initial_password_length: 32
 slack:
   channel_id_for_system_user: ""
 secret_version_id: ""
+# change_password, ignore, error
+when_login_profile_exist: change_password
 ```
 
 Required
@@ -87,6 +91,7 @@ Template variables:
 
 * secretsmanager:GetSecretValue
 * iam:CreateLoginProfile
+* iam:UpdateLoginProfile
 
 ### Slack App Permission
 

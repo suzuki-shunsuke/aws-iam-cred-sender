@@ -9,7 +9,8 @@ type Config struct {
 	Message               string
 	MessageForSystemUser  string `yaml:"message_for_system_user"`
 	Slack                 SlackConfig
-	InitialPasswordLength int `yaml:"initial_password_length"`
+	InitialPasswordLength int    `yaml:"initial_password_length"`
+	WhenLoginProfileExist string `yaml:"when_login_profile_exist"`
 }
 
 type SlackConfig struct {
