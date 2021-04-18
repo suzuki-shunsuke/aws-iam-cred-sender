@@ -70,6 +70,9 @@ func (handler *Handler) setDefaultConfig(cfg *controller.Config) {
 	if cfg.WhenLoginProfileExist == "" {
 		cfg.WhenLoginProfileExist = "change_password"
 	}
+	if cfg.DynamoDBTableName == "" {
+		cfg.DynamoDBTableName = "aws-iam-cred-sender"
+	}
 }
 
 func (handler *Handler) Init(ctx context.Context) error {
