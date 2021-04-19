@@ -23,14 +23,20 @@ func (ctrl *Controller) existUserNameAtDynamoDB(ctx context.Context, svc *dynamo
 	return len(result.Item) != 0, nil
 }
 
-func (ctrl *Controller) addUserNameToDynamoDB(ctx context.Context, svc *dynamodb.DynamoDB, userName string) error {
+func (ctrl *Controller) addUserNameToDynamoDB(ctx context.Context, svc *dynamodb.DynamoDB, userName, expiredAt string) error {
 	if _, err := svc.UpdateItemWithContext(ctx, &dynamodb.UpdateItemInput{
+		TableName: aws.String(ctrl.Config.DynamoDBTableName),
 		Key: map[string]*dynamodb.AttributeValue{
 			"UserName": {
 				S: aws.String(userName),
 			},
 		},
-		TableName: aws.String(ctrl.Config.DynamoDBTableName),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":ExpiredAt": {
+				N: aws.String(expiredAt),
+			},
+		},
+		UpdateExpression: aws.String("SET ExpiredAt = :ExpiredAt"),
 	}); err != nil {
 		return fmt.Errorf("update an item of DynamoDB: %w", err)
 	}

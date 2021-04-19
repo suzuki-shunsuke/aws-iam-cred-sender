@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -18,6 +20,8 @@ import (
 type Secret struct {
 	SlackBotToken string `yaml:"slack_bot_token"`
 }
+
+const ttl = 600 * time.Second
 
 func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:funlen,cyclop
 	sess := session.Must(session.NewSession())
@@ -36,7 +40,7 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:f
 	}
 
 	// add UserName to DynamoDB
-	if err := ctrl.addUserNameToDynamoDB(ctx, dynamoDBSvc, param.UserName); err != nil {
+	if err := ctrl.addUserNameToDynamoDB(ctx, dynamoDBSvc, param.UserName, strconv.FormatInt(time.Now().Add(ttl).Unix(), 10)); err != nil {
 		logE.WithError(err).Error("add IAM User Name to DynamoDB")
 	}
 	logE.Info("add IAM User Name to DynamoDB")
