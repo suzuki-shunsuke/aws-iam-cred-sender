@@ -44,16 +44,10 @@ Please see [here](docs/lambda-execution-role.md)
 * chat:write (chat.postMessage)
 * users:read (users.list)
 
-## Handle multiple function call with DynamoDB
+### DynamoDB
 
-[#12](https://github.com/suzuki-shunsuke/aws-iam-cred-sender/pull/12)
-
-Sometimes Lambda Function is called at multiple times by CloudWatch Event.
-
-https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/CWE_Troubleshooting.html#RuleTriggeredMoreThanOnce
-
-So we use DynamoDB to handle multiple function call.
-The function registers the User Name at DynamoDB, and if the User Name is already registered at DynamoDB table the function aborts the request.
+This function needs a DynamoDB table.
+Please see [here](docs/dynamodb.md).
 
 ## LICENSE
 

@@ -30,6 +30,7 @@ secret_version_id: ""
 # change_password, ignore, error
 when_login_profile_exist: change_password
 dynamodb_table_name: aws-iam-cred-sender
+dynamodb_ttl: 600
 ```
 
 Required
