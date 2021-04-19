@@ -62,6 +62,7 @@ slack:
 secret_version_id: ""
 # change_password, ignore, error
 when_login_profile_exist: change_password
+dynamodb_table_name: aws-iam-cred-sender
 ```
 
 Required
@@ -92,11 +93,24 @@ Template variables:
 * secretsmanager:GetSecretValue
 * iam:CreateLoginProfile
 * iam:UpdateLoginProfile
+* dynamodb:GetItem
+* dynamodb:UpdateItem
 
 ### Slack App Permission
 
 * chat:write (chat.postMessage)
 * users:read (users.list)
+
+## Handle multiple function call with DynamoDB
+
+[#12](https://github.com/suzuki-shunsuke/aws-iam-cred-sender/pull/12)
+
+Sometimes Lambda Function is called at multiple times by CloudWatch Event.
+
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/CWE_Troubleshooting.html#RuleTriggeredMoreThanOnce
+
+So we use DynamoDB to handle multiple function call.
+The function registers the User Name at DynamoDB, and if the User Name is already registered at DynamoDB table the function aborts the request.
 
 ## LICENSE
 

@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/sethvargo/go-password/password"
 	"github.com/sirupsen/logrus"
@@ -23,6 +24,22 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:f
 	logE := logrus.WithFields(logrus.Fields{
 		"user_name": param.UserName,
 	})
+
+	// check user is registered at DynamoDB
+	dynamoDBSvc := dynamodb.New(sess)
+
+	if f, err := ctrl.existUserNameAtDynamoDB(ctx, dynamoDBSvc, param.UserName); err != nil {
+		logE.WithError(err).Error("check whether an IAM User is registered at DynamoDB")
+	} else if f {
+		logE.Info("this IAM User has already been registered at DynamoDB")
+		return nil
+	}
+
+	// add UserName to DynamoDB
+	if err := ctrl.addUserNameToDynamoDB(ctx, dynamoDBSvc, param.UserName); err != nil {
+		logE.WithError(err).Error("add IAM User Name to DynamoDB")
+	}
+	logE.Info("add IAM User Name to DynamoDB")
 
 	// get a slack user id
 	logE.Info("start getting a Slack User")
