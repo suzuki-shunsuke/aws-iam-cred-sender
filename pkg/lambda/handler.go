@@ -73,6 +73,9 @@ func (handler *Handler) setDefaultConfig(cfg *controller.Config) {
 	if cfg.DynamoDBTableName == "" {
 		cfg.DynamoDBTableName = "aws-iam-cred-sender"
 	}
+	if cfg.DynamoDBTTL == 0 {
+		cfg.DynamoDBTTL = 600 // default ttl: 600 seconds (10 minutes)
+	}
 }
 
 func (handler *Handler) Init(ctx context.Context) error {

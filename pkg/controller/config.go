@@ -12,6 +12,7 @@ type Config struct {
 	InitialPasswordLength int    `yaml:"initial_password_length"`
 	WhenLoginProfileExist string `yaml:"when_login_profile_exist"`
 	DynamoDBTableName     string `yaml:"dynamodb_table_name"`
+	DynamoDBTTL           int    `yaml:"dynamodb_ttl"`
 }
 
 type SlackConfig struct {
