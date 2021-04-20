@@ -27,9 +27,7 @@ If the login profile already exists, the password is changed by default. This be
 
 ## Architecture
 
-```
-CloudWatch Event => Lambda Function = inital password => User (Slack DM)
-```
+![aws-iam-cred-sender](https://user-images.githubusercontent.com/13323303/115412477-4cc3e000-a22f-11eb-9d28-062f996b9697.png)
 
 ## Configuration
 
