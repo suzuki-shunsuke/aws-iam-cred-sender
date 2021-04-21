@@ -11,7 +11,7 @@ import (
 // > We recommend no more than 200 results at a time.
 const usersOpitonLimit = 190
 
-func (ctrl *Controller) GetSlackUser(ctx context.Context, name string) (slack.User, error) {
+func (ctrl *Controller) getSlackUser(ctx context.Context, name string) (slack.User, error) {
 	userPagination := ctrl.SlackBot.GetUsersPaginated(slack.GetUsersOptionLimit(usersOpitonLimit))
 	for {
 		for _, user := range userPagination.Users {

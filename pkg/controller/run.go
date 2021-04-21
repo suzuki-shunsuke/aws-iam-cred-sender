@@ -45,7 +45,7 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:f
 
 	// get a slack user id
 	logE.Info("start getting a Slack User")
-	user, err := ctrl.GetSlackUser(ctx, param.UserName)
+	user, err := ctrl.getSlackUser(ctx, param.UserName)
 	if err != nil {
 		return ctrl.handleSystemUser(ctx, param)
 	}
