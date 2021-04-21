@@ -3,7 +3,6 @@ package lambda
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -22,62 +21,6 @@ type Handler struct {
 	ctrl *controller.Controller
 }
 
-const (
-	systemUserCreatedMsg = "AWS IAM User for system has been created: `{{.UserName}}`"
-	userCreatedMsg       = `Your AWS IAM User has been created.
-AWS Account ID: ` + "`{{.AWSAccountID}}`" + `
-User Name: ` + "`{{.UserName}}`" + `
-Initial password:
-
-` + "```" + `
-{{.Password}}
-` + "```" + `
-
-Please sign in AWS and change your password.
-
-https://{{.AWSAccountID}}.signin.aws.amazon.com/console
-
-And please create your AWS Access Key if needed.
-https://console.aws.amazon.com/iam/home#/users/{{.UserName}}?section=security_credentials
-`
-)
-
-var (
-	errAWSAccountIDIsRequired = errors.New("AWS Account ID is required")
-	errSecretIDIsRequired     = errors.New("secret ID is required")
-)
-
-func (handler *Handler) validateConfig(cfg controller.Config) error {
-	if cfg.AWSAccountID == "" {
-		return errAWSAccountIDIsRequired
-	}
-	if cfg.SecretID == "" {
-		return errSecretIDIsRequired
-	}
-	return nil
-}
-
-func (handler *Handler) setDefaultConfig(cfg *controller.Config) {
-	if cfg.InitialPasswordLength == 0 {
-		cfg.InitialPasswordLength = 32
-	}
-	if cfg.Message == "" {
-		cfg.Message = userCreatedMsg
-	}
-	if cfg.MessageForSystemUser == "" {
-		cfg.MessageForSystemUser = systemUserCreatedMsg
-	}
-	if cfg.WhenLoginProfileExist == "" {
-		cfg.WhenLoginProfileExist = "change_password"
-	}
-	if cfg.DynamoDBTableName == "" {
-		cfg.DynamoDBTableName = "aws-iam-cred-sender"
-	}
-	if cfg.DynamoDBTTL == 0 {
-		cfg.DynamoDBTTL = 600 // default ttl: 600 seconds (10 minutes)
-	}
-}
-
 func (handler *Handler) Init(ctx context.Context) error {
 	cfgString := os.Getenv("CONFIG")
 	cfg := controller.Config{}
@@ -94,21 +37,9 @@ func (handler *Handler) Init(ctx context.Context) error {
 	handler.setDefaultConfig(&cfg)
 
 	sess := session.Must(session.NewSession())
-
-	svc := secretsmanager.New(sess, aws.NewConfig().WithRegion(cfg.Region))
-	input := &secretsmanager.GetSecretValueInput{
-		SecretId: aws.String(cfg.SecretID),
-	}
-	if cfg.SecretVersionID != "" {
-		input.VersionId = aws.String(cfg.SecretVersionID)
-	}
-	output, err := svc.GetSecretValueWithContext(ctx, input)
+	secret, err := handler.readSecret(ctx, sess, &cfg)
 	if err != nil {
-		return fmt.Errorf("get secret value from AWS SecretsManager: %w", err)
-	}
-	secret := controller.Secret{}
-	if err := yaml.Unmarshal([]byte(*output.SecretString), &secret); err != nil {
-		return fmt.Errorf("parse secret value: %w", err)
+		return err
 	}
 
 	ctrl, _, err := controller.New(ctx, controller.Param{})
@@ -124,7 +55,6 @@ func (handler *Handler) Init(ctx context.Context) error {
 		return fmt.Errorf("parse the configuration message_for_system_user as template: %w", err)
 	}
 
-	// create a slack client
 	ctrl.SlackBot = slack.New(secret.SlackBotToken)
 	handler.ctrl = &ctrl
 
@@ -137,6 +67,25 @@ func (handler *Handler) Start(ctx context.Context, ev events.CloudWatchEvent) er
 		return err
 	}
 	return nil
+}
+
+func (handler *Handler) readSecret(ctx context.Context, sess *session.Session, cfg *controller.Config) (controller.Secret, error) {
+	secret := controller.Secret{}
+	svc := secretsmanager.New(sess, aws.NewConfig().WithRegion(cfg.Region))
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(cfg.SecretID),
+	}
+	if cfg.SecretVersionID != "" {
+		input.VersionId = aws.String(cfg.SecretVersionID)
+	}
+	output, err := svc.GetSecretValueWithContext(ctx, input)
+	if err != nil {
+		return secret, fmt.Errorf("get secret value from AWS SecretsManager: %w", err)
+	}
+	if err := json.Unmarshal([]byte(*output.SecretString), &secret); err != nil {
+		return secret, fmt.Errorf("parse secret value: %w", err)
+	}
+	return secret, nil
 }
 
 func (handler *Handler) start(ctx context.Context, ev events.CloudWatchEvent) error {

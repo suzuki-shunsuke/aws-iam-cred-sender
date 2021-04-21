@@ -27,7 +27,7 @@ type User struct {
 	Name string
 }
 
-func (handler *Parser) Parse(ctx context.Context, ev events.CloudWatchEvent) (User, error) {
+func (*Parser) Parse(ctx context.Context, ev events.CloudWatchEvent) (User, error) {
 	ed := EventDetail{}
 	user := User{}
 	if err := json.Unmarshal(ev.Detail, &ed); err != nil {
