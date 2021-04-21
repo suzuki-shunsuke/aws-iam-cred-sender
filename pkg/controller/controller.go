@@ -2,7 +2,7 @@ package controller
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"io"
 	"os"
 	"text/template"
@@ -25,7 +25,7 @@ func New(ctx context.Context, param Param) (Controller, Param, error) {
 	if param.LogLevel != "" {
 		lvl, err := logrus.ParseLevel(param.LogLevel)
 		if err != nil {
-			return Controller{}, param, errors.New("the log level is invalid")
+			return Controller{}, param, fmt.Errorf("the log level is invalid: %w", err)
 		}
 		logrus.SetLevel(lvl)
 	}
