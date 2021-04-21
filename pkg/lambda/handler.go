@@ -61,6 +61,14 @@ func (handler *Handler) Init(ctx context.Context) error {
 	return nil
 }
 
+func (handler *Handler) Start(ctx context.Context, ev events.CloudWatchEvent) error {
+	if err := handler.start(ctx, ev); err != nil {
+		logrus.WithError(err).Error("handle a CloudWatchEvent")
+		return err
+	}
+	return nil
+}
+
 func (handler *Handler) readSecret(ctx context.Context, sess *session.Session, cfg *controller.Config) (controller.Secret, error) {
 	secret := controller.Secret{}
 	svc := secretsmanager.New(sess, aws.NewConfig().WithRegion(cfg.Region))
@@ -78,14 +86,6 @@ func (handler *Handler) readSecret(ctx context.Context, sess *session.Session, c
 		return secret, fmt.Errorf("parse secret value: %w", err)
 	}
 	return secret, nil
-}
-
-func (handler *Handler) Start(ctx context.Context, ev events.CloudWatchEvent) error {
-	if err := handler.start(ctx, ev); err != nil {
-		logrus.WithError(err).Error("handle a CloudWatchEvent")
-		return err
-	}
-	return nil
 }
 
 func (handler *Handler) start(ctx context.Context, ev events.CloudWatchEvent) error {
