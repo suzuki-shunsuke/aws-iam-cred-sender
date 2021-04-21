@@ -74,7 +74,7 @@ func (handler *Handler) readSecret(ctx context.Context, sess *session.Session, c
 	if err != nil {
 		return secret, fmt.Errorf("get secret value from AWS SecretsManager: %w", err)
 	}
-	if err := yaml.Unmarshal([]byte(*output.SecretString), &secret); err != nil {
+	if err := json.Unmarshal([]byte(*output.SecretString), &secret); err != nil {
 		return secret, fmt.Errorf("parse secret value: %w", err)
 	}
 	return secret, nil
