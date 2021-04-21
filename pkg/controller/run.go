@@ -96,7 +96,7 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:f
 	// 	return err
 	// }
 	// create a message
-	msg, err := ctrl.RenderTemplate(ctrl.MessageTemplate, map[string]interface{}{
+	msg, err := ctrl.renderTemplate(ctrl.MessageTemplate, map[string]interface{}{
 		"UserName":     param.UserName,
 		"Password":     passwd,
 		"AWSAccountID": ctrl.Config.AWSAccountID,
@@ -123,7 +123,7 @@ func (ctrl *Controller) handleSystemUser(ctx context.Context, param Param) error
 	}
 	// treat the user as a system account
 	// send a notification to slack
-	msg, err := ctrl.RenderTemplate(ctrl.MessageTemplateForSystemUser, map[string]interface{}{
+	msg, err := ctrl.renderTemplate(ctrl.MessageTemplateForSystemUser, map[string]interface{}{
 		"UserName":     param.UserName,
 		"AWSAccountID": ctrl.Config.AWSAccountID,
 	})
