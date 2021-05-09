@@ -140,6 +140,8 @@ func (ctrl *Controller) handleSystemUser(ctx context.Context, param Param) error
 }
 
 func (ctrl *Controller) updateLoginProfile(ctx context.Context, logE *logrus.Entry, iamSvc *iam.IAM, input *iam.UpdateLoginProfileInput) error {
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
 	for {
 		if _, err := iamSvc.UpdateLoginProfileWithContext(ctx, input); err != nil {
 			var aerr awserr.Error
