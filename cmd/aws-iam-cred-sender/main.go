@@ -2,17 +2,18 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/sirupsen/logrus"
 	lmb "github.com/suzuki-shunsuke/aws-iam-cred-sender/pkg/lambda"
 )
 
 func main() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 	handler := lmb.Handler{}
 	ctx := context.Background()
 	if err := handler.Init(ctx); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	lambda.Start(handler.Start)
 }
