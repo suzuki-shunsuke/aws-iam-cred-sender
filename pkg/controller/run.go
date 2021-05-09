@@ -77,7 +77,7 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:f
 			if ctrl.Config.WhenLoginProfileExist == "ignore" {
 				return nil
 			}
-			if _, err := iamSvc.UpdateLoginProfileWithContext(ctx, &iam.UpdateLoginProfileInput{
+			if err := ctrl.updateLoginProfile(ctx, logE, iamSvc, &iam.UpdateLoginProfileInput{
 				Password:              aws.String(passwd),
 				PasswordResetRequired: aws.Bool(true),
 				UserName:              aws.String(param.UserName),
@@ -137,4 +137,26 @@ func (ctrl *Controller) handleSystemUser(ctx context.Context, param Param) error
 		"channel_id": ctrl.Config.Slack.ChannelIDForSystemUser,
 	}).Info("send a notification that a system user has been created to Slack channel")
 	return nil
+}
+
+func (ctrl *Controller) updateLoginProfile(ctx context.Context, logE *logrus.Entry, iamSvc *iam.IAM, input *iam.UpdateLoginProfileInput) error {
+	for {
+		if _, err := iamSvc.UpdateLoginProfileWithContext(ctx, input); err != nil {
+			var aerr awserr.Error
+			if errors.As(err, &aerr) {
+				if aerr.Code() == iam.ErrCodeEntityTemporarilyUnmodifiableException {
+					// retry
+					select {
+					case <-ctx.Done():
+						return fmt.Errorf("context is cancelled: %w", ctx.Err())
+					case <-time.After(1 * time.Second):
+						logE.Info("retry to update a login profile")
+						continue
+					}
+				}
+			}
+			return fmt.Errorf("update a login profile: %w", err)
+		}
+		return nil
+	}
 }
