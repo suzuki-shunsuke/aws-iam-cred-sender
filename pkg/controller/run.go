@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -77,7 +78,7 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:f
 			if ctrl.Config.WhenLoginProfileExist == "ignore" {
 				return nil
 			}
-			if err := ctrl.updateLoginProfile(ctx, logE, iamSvc, &iam.UpdateLoginProfileInput{
+			if err := updateLoginProfile(ctx, logE, iamSvc, &iam.UpdateLoginProfileInput{
 				Password:              aws.String(passwd),
 				PasswordResetRequired: aws.Bool(true),
 				UserName:              aws.String(param.UserName),
@@ -139,7 +140,11 @@ func (ctrl *Controller) handleSystemUser(ctx context.Context, param Param) error
 	return nil
 }
 
-func (ctrl *Controller) updateLoginProfile(ctx context.Context, logE *logrus.Entry, iamSvc *iam.IAM, input *iam.UpdateLoginProfileInput) error {
+type IAM interface {
+	UpdateLoginProfileWithContext(ctx aws.Context, input *iam.UpdateLoginProfileInput, opts ...request.Option) (*iam.UpdateLoginProfileOutput, error)
+}
+
+func updateLoginProfile(ctx context.Context, logE *logrus.Entry, iamSvc IAM, input *iam.UpdateLoginProfileInput) error {
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 	for {
