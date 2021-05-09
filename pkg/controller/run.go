@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -77,7 +78,7 @@ func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:f
 			if ctrl.Config.WhenLoginProfileExist == "ignore" {
 				return nil
 			}
-			if _, err := iamSvc.UpdateLoginProfileWithContext(ctx, &iam.UpdateLoginProfileInput{
+			if err := updateLoginProfile(ctx, logE, iamSvc, &iam.UpdateLoginProfileInput{
 				Password:              aws.String(passwd),
 				PasswordResetRequired: aws.Bool(true),
 				UserName:              aws.String(param.UserName),
@@ -137,4 +138,32 @@ func (ctrl *Controller) handleSystemUser(ctx context.Context, param Param) error
 		"channel_id": ctrl.Config.Slack.ChannelIDForSystemUser,
 	}).Info("send a notification that a system user has been created to Slack channel")
 	return nil
+}
+
+type IAM interface {
+	UpdateLoginProfileWithContext(ctx aws.Context, input *iam.UpdateLoginProfileInput, opts ...request.Option) (*iam.UpdateLoginProfileOutput, error)
+}
+
+func updateLoginProfile(ctx context.Context, logE *logrus.Entry, iamSvc IAM, input *iam.UpdateLoginProfileInput) error {
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
+	for {
+		if _, err := iamSvc.UpdateLoginProfileWithContext(ctx, input); err != nil {
+			var aerr awserr.Error
+			if errors.As(err, &aerr) {
+				if aerr.Code() == iam.ErrCodeEntityTemporarilyUnmodifiableException {
+					// retry
+					select {
+					case <-ctx.Done():
+						return fmt.Errorf("context is cancelled: %w", ctx.Err())
+					case <-time.After(1 * time.Second):
+						logE.Info("retry to update a login profile")
+						continue
+					}
+				}
+			}
+			return fmt.Errorf("update a login profile: %w", err)
+		}
+		return nil
+	}
 }
