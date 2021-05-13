@@ -19,7 +19,7 @@ import (
 )
 
 type Secret struct {
-	SlackBotToken string `yaml:"slack_bot_token"`
+	SlackBotToken string `json:"slack_bot_token"`
 }
 
 func (ctrl *Controller) Run(ctx context.Context, param Param) error { //nolint:funlen,cyclop
