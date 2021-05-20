@@ -11,7 +11,7 @@ import (
 
 type Parser struct{}
 
-type EventDetail struct {
+type detail struct {
 	RequestParameters RequestParameters `json:"requestParameters"`
 }
 
@@ -19,7 +19,7 @@ type RequestParameters struct {
 	UserName string `json:"userName"`
 }
 
-func (detail *EventDetail) UserName() string {
+func (detail *detail) UserName() string {
 	return detail.RequestParameters.UserName
 }
 
@@ -28,7 +28,7 @@ type User struct {
 }
 
 func (*Parser) Parse(ctx context.Context, ev events.CloudWatchEvent) (User, error) {
-	ed := EventDetail{}
+	ed := detail{}
 	user := User{}
 	if err := json.Unmarshal(ev.Detail, &ed); err != nil {
 		return user, fmt.Errorf("parse a request body detail: %w", err)

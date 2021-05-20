@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 )
 
@@ -11,12 +12,19 @@ import (
 // > We recommend no more than 200 results at a time.
 const usersOpitonLimit = 190
 
-func (ctrl *Controller) getSlackUser(ctx context.Context, name string) (slack.User, error) {
+func (ctrl *Controller) getSlackUser(ctx context.Context, name string, logE *logrus.Entry) (slack.User, error) {
 	userPagination := ctrl.SlackBot.GetUsersPaginated(slack.GetUsersOptionLimit(usersOpitonLimit))
 	for {
 		for _, user := range userPagination.Users {
 			// https://api.slack.com/types/user
 			if user.Profile.DisplayName == name {
+				if user.Deleted {
+					logE.WithFields(logrus.Fields{
+						"user_id":      user.ID,
+						"display_name": name,
+					}).Warn("user is found, but the user is deleted")
+					continue
+				}
 				return user, nil
 			}
 		}
