@@ -4,7 +4,7 @@ type Config struct {
 	LogLevel              string `yaml:"log_level"`
 	SecretID              string `yaml:"secret_id"`
 	SecretVersionID       string `yaml:"secret_version_id"`
-	AWSAccountID          string `yaml:"aws_account_id"`
+	AWSAccountID          string `yaml:"-"`
 	Region                string
 	Message               string
 	MessageForSystemUser  string `yaml:"message_for_system_user"`
