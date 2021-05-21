@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 	"github.com/suzuki-shunsuke/aws-iam-cred-sender/pkg/controller"
@@ -41,6 +42,13 @@ func (handler *Handler) Init(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	stsSvc := sts.New(sess, aws.NewConfig().WithRegion(cfg.Region))
+	stsOutput, err := stsSvc.GetCallerIdentityWithContext(ctx, &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return fmt.Errorf("get a caller identity: %w", err)
+	}
+	cfg.AWSAccountID = aws.StringValue(stsOutput.Account)
 
 	ctrl, _, err := controller.New(ctx, controller.Param{})
 	if err != nil {

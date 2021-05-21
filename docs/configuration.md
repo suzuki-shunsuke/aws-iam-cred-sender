@@ -36,7 +36,6 @@ dynamodb_ttl: 600
 Required
 
 ```yaml
-aws_account_id: "xxx"
 secret_id: xxx
 region: xxx
 ```
