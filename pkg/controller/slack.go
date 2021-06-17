@@ -17,7 +17,8 @@ func (ctrl *Controller) getSlackUser(ctx context.Context, name string, logE *log
 	for {
 		for _, user := range userPagination.Users {
 			// https://api.slack.com/types/user
-			if user.Profile.DisplayName == name {
+			user := user
+			if getSlackUserName(&user) == name {
 				if user.Deleted {
 					logE.WithFields(logrus.Fields{
 						"user_id":      user.ID,
@@ -34,4 +35,13 @@ func (ctrl *Controller) getSlackUser(ctx context.Context, name string, logE *log
 			return slack.User{}, errors.New("user isn't found: " + name)
 		}
 	}
+}
+
+func getSlackUserName(user *slack.User) string {
+	for _, name := range []string{user.Profile.DisplayName, user.Profile.RealNameNormalized} {
+		if name != "" {
+			return name
+		}
+	}
+	return ""
 }
