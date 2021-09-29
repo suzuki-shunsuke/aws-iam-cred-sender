@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/suzuki-shunsuke/aws-iam-cred-sender/workflows/build/badge.svg)](https://github.com/suzuki-shunsuke/aws-iam-cred-sender/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/suzuki-shunsuke/aws-iam-cred-sender)](https://goreportcard.com/report/github.com/suzuki-shunsuke/aws-iam-cred-sender)
 [![GitHub last commit](https://img.shields.io/github/last-commit/suzuki-shunsuke/aws-iam-cred-sender.svg)](https://github.com/suzuki-shunsuke/aws-iam-cred-sender)
-[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/aws-iam-cred-sender/master/LICENSE)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/aws-iam-cred-sender/main/LICENSE)
 
 AWS Lambda Function to send an initial password to a new user via Slack DM
 
