@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
-	github.com/aws/aws-lambda-go v1.33.0
+	github.com/aws/aws-lambda-go v1.34.0
 	github.com/aws/aws-sdk-go v1.44.65
 	github.com/sethvargo/go-password v0.2.0
 	github.com/sirupsen/logrus v1.9.0

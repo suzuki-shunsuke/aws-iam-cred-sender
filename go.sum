@@ -4,8 +4,8 @@ github.com/Masterminds/semver/v3 v3.1.1 h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030I
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/Masterminds/sprig/v3 v3.2.2 h1:17jRggJu518dr3QaafizSXOjKYp94wKfABxUmyxvxX8=
 github.com/Masterminds/sprig/v3 v3.2.2/go.mod h1:UoaO7Yp8KlPnJIYWTFkMaqPUYKTfGFPhxNuwnnxkKlk=
-github.com/aws/aws-lambda-go v1.33.0 h1:n4kw3zie82vPpLLN58ahlYHBz9k8QeK2svQep+jGnB8=
-github.com/aws/aws-lambda-go v1.33.0/go.mod h1:jwFe2KmMsHmffA1X2R09hH6lFzJQxzI8qK17ewzbQMM=
+github.com/aws/aws-lambda-go v1.34.0 h1:iQMJkX0pzhe6+sXb90niz5//TtvOgghu1U1I5Cfo8v4=
+github.com/aws/aws-lambda-go v1.34.0/go.mod h1:jwFe2KmMsHmffA1X2R09hH6lFzJQxzI8qK17ewzbQMM=
 github.com/aws/aws-sdk-go v1.44.65 h1:G+kuQ0+kcg8ltLZqju3OA9NDtGsGuSDrNWaXwgYFEH8=
 github.com/aws/aws-sdk-go v1.44.65/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX4oIKwKHZo=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
