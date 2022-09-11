@@ -8,6 +8,6 @@ require (
 	github.com/aws/aws-sdk-go v1.44.95
 	github.com/sethvargo/go-password v0.2.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/slack-go/slack v0.11.2
+	github.com/slack-go/slack v0.11.3
 	gopkg.in/yaml.v2 v2.4.0
 )
